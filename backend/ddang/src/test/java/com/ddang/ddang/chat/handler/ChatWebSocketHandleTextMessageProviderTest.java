@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
@@ -171,6 +172,19 @@ class ChatWebSocketHandleTextMessageProviderTest extends ChatWebSocketHandleText
 
         // then
         assertThat(actual).hasSize(1);
+    }
+
+    @Test
+    void 잘못된_데이터_타입_전달시_예외가_발생한다() throws JsonProcessingException {
+        // given
+        given(writerSession.getAttributes()).willReturn(발신자_세션_attribute_정보);
+        willDoNothing().given(sessions).add(writerSession, 채팅방.getId());
+        willReturn(false).given(sessions).containsByUserId(채팅방.getId(), 수신자.getId());
+        willReturn(Set.of(writerSession)).given(sessions).getSessionsByChatRoomId(채팅방.getId());
+
+        // when
+        assertThatThrownBy(() -> provider.handleCreateSendMessage(writerSession, 잘못된_메시지_전송_데이터))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test

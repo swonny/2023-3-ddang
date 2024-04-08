@@ -46,6 +46,7 @@ public class ChatWebSocketHandleTextMessageProviderTestFixture {
     protected Map<String, Object> 발신자_세션_attribute_정보;
     protected Map<String, Object> 수신자_세션_attribute_정보;
     protected Map<String, String> 메시지_전송_데이터;
+    protected Map<String, String> 잘못된_메시지_전송_데이터;
 
     protected CreateReadMessageLogEvent 메시지_로그_생성_이벤트;
 
@@ -92,6 +93,9 @@ public class ChatWebSocketHandleTextMessageProviderTestFixture {
                 "chatRoomId", String.valueOf(채팅방.getId()),
                 "receiverId", String.valueOf(수신자.getId()),
                 "contents", "메시지 내용"
+        );
+        잘못된_메시지_전송_데이터 = Map.of(
+                "type", "wrong message type"
         );
 
         메시지_로그_생성_이벤트 = new CreateReadMessageLogEvent(채팅방);
