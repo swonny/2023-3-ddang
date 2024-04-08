@@ -30,6 +30,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTextMessageProvider {
 
+    private static final String CHATROOM_ID_KEY = "chatRoomId";
+
     private final WebSocketChatSessions sessions;
     private final ObjectMapper objectMapper;
     private final MessageService messageService;
@@ -47,10 +49,19 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
             final Map<String, String> data
     ) throws JsonProcessingException {
         final SessionAttributeDto sessionAttribute = getSessionAttributes(session);
-        final ChatMessageDataDto messageData = objectMapper.convertValue(data, ChatMessageDataDto.class);
-        sessions.add(session, messageData.chatRoomId());
+        final long chatRoomId = getChatRoomId(data);
+        sessions.add(session, chatRoomId);
 
+        return createSendMessageResponse(data, sessionAttribute);
+    }
+
+    private long getChatRoomId(final Map<String, String> data) {
+        return Long.parseLong(data.get(CHATROOM_ID_KEY));
+    }
+
+    private List<SendMessageDto> createSendMessageResponse(final Map<String, String> data, final SessionAttributeDto sessionAttribute) throws JsonProcessingException {
         final Long writerId = sessionAttribute.userId();
+        final ChatMessageDataDto messageData = objectMapper.convertValue(data, ChatMessageDataDto.class);
         final CreateMessageDto createMessageDto = createMessageDto(messageData, writerId);
         final Message message = messageService.create(createMessageDto);
         sendNotificationIfReceiverNotInSession(message, sessionAttribute);
