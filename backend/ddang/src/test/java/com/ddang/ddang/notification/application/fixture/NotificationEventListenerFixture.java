@@ -68,42 +68,42 @@ public class NotificationEventListenerFixture {
     @BeforeEach
     void setUpFixture() {
         final User 발신자_겸_판매자 = User.builder()
-                                   .name("발신자 겸 판매자")
-                                   .profileImage(new ProfileImage("upload.png", "store.png"))
-                                   .reliability(new Reliability(4.7d))
-                                   .oauthId("12345")
-                                   .build();
+                .name("발신자 겸 판매자")
+                .profileImage(new ProfileImage("upload.png", "store.png"))
+                .reliability(new Reliability(4.7d))
+                .oauthId("12345")
+                .build();
         final User 수신자_겸_기존_입찰자 = User.builder()
-                                      .name("수신자 겸 기존 입찰자")
-                                      .profileImage(new ProfileImage("upload.png", "store.png"))
-                                      .reliability(new Reliability(4.7d))
-                                      .oauthId("12347")
-                                      .build();
+                .name("수신자 겸 기존 입찰자")
+                .profileImage(new ProfileImage("upload.png", "store.png"))
+                .reliability(new Reliability(4.7d))
+                .oauthId("12347")
+                .build();
         final User 새로운_입찰자 = User.builder()
-                                 .name("새로운 입찰자")
-                                 .profileImage(new ProfileImage("upload.png", "store.png"))
-                                 .reliability(new Reliability(4.7d))
-                                 .oauthId("13579")
-                                 .build();
+                .name("새로운 입찰자")
+                .profileImage(new ProfileImage("upload.png", "store.png"))
+                .reliability(new Reliability(4.7d))
+                .oauthId("13579")
+                .build();
         final User 질문자 = User.builder()
-                             .name("질문자")
-                             .profileImage(new ProfileImage("upload.png", "store.png"))
-                             .reliability(new Reliability(4.7d))
-                             .oauthId("12038")
-                             .build();
+                .name("질문자")
+                .profileImage(new ProfileImage("upload.png", "store.png"))
+                .reliability(new Reliability(4.7d))
+                .oauthId("12038")
+                .build();
         userRepository.save(발신자_겸_판매자);
         userRepository.save(수신자_겸_기존_입찰자);
         userRepository.save(새로운_입찰자);
         userRepository.save(질문자);
 
         final Auction 경매 = Auction.builder()
-                                  .seller(발신자_겸_판매자)
-                                  .title("경매글")
-                                  .description("경매글 설명")
-                                  .bidUnit(new BidUnit(100))
-                                  .startPrice(new Price(100))
-                                  .closingTime(LocalDateTime.now().plusDays(3L))
-                                  .build();
+                .seller(발신자_겸_판매자)
+                .title("경매글")
+                .description("경매글 설명")
+                .bidUnit(new BidUnit(100))
+                .startPrice(new Price(100))
+                .closingTime(LocalDateTime.now().plusDays(3L))
+                .build();
         auctionRepository.save(경매);
 
         final AuctionImage 경매_이미지 = new AuctionImage("upload.jpg", "store.jpg");
@@ -121,6 +121,7 @@ public class NotificationEventListenerFixture {
                 "baseUrl", 이미지_절대_경로
         ));
         메시지_전송_데이터 = Map.of(
+                "type", "message",
                 "chatRoomId", String.valueOf(채팅방.getId()),
                 "receiverId", String.valueOf(수신자_겸_기존_입찰자.getId()),
                 "contents", "메시지 내용"
@@ -129,11 +130,11 @@ public class NotificationEventListenerFixture {
 
         final Message 저장된_메시지 = messageRepository.save(
                 Message.builder()
-                       .chatRoom(채팅방)
-                       .writer(발신자_겸_판매자)
-                       .receiver(수신자_겸_기존_입찰자)
-                       .contents("메시지 내용")
-                       .build()
+                        .chatRoom(채팅방)
+                        .writer(발신자_겸_판매자)
+                        .receiver(수신자_겸_기존_입찰자)
+                        .contents("메시지 내용")
+                        .build()
         );
         final AuctionAndImageDto auctionAndImageDto = new AuctionAndImageDto(경매, 경매_이미지);
         final BidDto 입찰_DTO = new BidDto(수신자_겸_기존_입찰자.getId(), auctionAndImageDto, 이미지_절대_경로);

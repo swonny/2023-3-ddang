@@ -10,7 +10,6 @@ import com.ddang.ddang.chat.application.LastReadMessageLogService;
 import com.ddang.ddang.chat.application.event.CreateReadMessageLogEvent;
 import com.ddang.ddang.chat.domain.ChatRoom;
 import com.ddang.ddang.chat.domain.repository.ChatRoomRepository;
-import com.ddang.ddang.chat.domain.repository.ReadMessageLogRepository;
 import com.ddang.ddang.image.domain.ProfileImage;
 import com.ddang.ddang.user.domain.Reliability;
 import com.ddang.ddang.user.domain.User;
@@ -89,6 +88,7 @@ public class ChatWebSocketHandleTextMessageProviderTestFixture {
         발신자_세션_attribute_정보 = new HashMap<>(Map.of("userId", 발신자.getId(), "baseUrl", "/images"));
         수신자_세션_attribute_정보 = new HashMap<>(Map.of("userId", 수신자.getId(), "baseUrl", "/images"));
         메시지_전송_데이터 = Map.of(
+                "type", "message",
                 "chatRoomId", String.valueOf(채팅방.getId()),
                 "receiverId", String.valueOf(수신자.getId()),
                 "contents", "메시지 내용"
