@@ -1,11 +1,9 @@
 package com.ddang.ddang.websocket.handler.dto;
 
 import java.util.Arrays;
-import java.util.Map;
 
 public enum ChattingType {
 
-    CHATTING_TYPE_KEY("type"),
     MESSAGE("message"),
     PING("ping"),
     ;
@@ -16,8 +14,7 @@ public enum ChattingType {
         this.value = value;
     }
 
-    public static ChattingType findValue(final Map<String, String> data) {
-        final String value = data.get(CHATTING_TYPE_KEY.value);
+    public static ChattingType findValue(final String value) {
         return Arrays.stream(ChattingType.values())
                 .filter(chattingType -> chattingType.value.equals(value))
                 .findFirst()
