@@ -15,6 +15,7 @@ import com.ddang.ddang.chat.handler.dto.SendMessageStatus;
 import com.ddang.ddang.chat.presentation.dto.request.CreateMessageRequest;
 import com.ddang.ddang.chat.presentation.dto.request.ReadMessageRequest;
 import com.ddang.ddang.websocket.handler.WebSocketHandleTextMessageProvider;
+import com.ddang.ddang.websocket.handler.dto.ChattingType;
 import com.ddang.ddang.websocket.handler.dto.SendMessageDto;
 import com.ddang.ddang.websocket.handler.dto.SessionAttributeDto;
 import com.ddang.ddang.websocket.handler.dto.TextMessageType;
@@ -57,7 +58,8 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
         final long chatRoomId = getChatRoomId(data);
         sessions.add(session, chatRoomId);
 
-        if (isPing(data)) {
+        final ChattingType type = ChattingType.findValue(data);
+        if (ChattingType.PING == type) {
             return createPingResponse(sessionAttribute, data, session);
         }
         return createSendMessageResponse(data, sessionAttribute);
@@ -71,10 +73,6 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
         final Map<String, Object> attributes = session.getAttributes();
 
         return objectMapper.convertValue(attributes, SessionAttributeDto.class);
-    }
-
-    private boolean isPing(final Map<String, String> data) {
-        return data.get("type").equals("ping");
     }
 
     private List<SendMessageDto> createPingResponse(final SessionAttributeDto sessionAttribute, final Map<String, String> data, final WebSocketSession userSession) throws JsonProcessingException {
