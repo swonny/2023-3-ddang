@@ -1,5 +1,6 @@
 package com.ddang.ddang.chat.handler.dto;
 
+import com.ddang.ddang.chat.application.dto.ReadMessageDto;
 import com.ddang.ddang.chat.domain.Message;
 import com.fasterxml.jackson.annotation.JsonFormat;
 
@@ -22,6 +23,15 @@ public record MessageDto(
                 message.getCreatedTime(),
                 isMyMessage,
                 message.getContents()
+        );
+    }
+
+    public static MessageDto of(final ReadMessageDto readMessageDto, final boolean isMyMessage) {
+        return new MessageDto(
+                readMessageDto.id(),
+                readMessageDto.createdTime(),
+                isMyMessage,
+                readMessageDto.contents()
         );
     }
 }

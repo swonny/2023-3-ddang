@@ -67,6 +67,12 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
         return Long.parseLong(data.get(CHATROOM_ID_KEY));
     }
 
+    private SessionAttributeDto getSessionAttributes(final WebSocketSession session) {
+        final Map<String, Object> attributes = session.getAttributes();
+
+        return objectMapper.convertValue(attributes, SessionAttributeDto.class);
+    }
+
     private boolean isPing(final Map<String, String> data) {
         return data.get("type").equals("ping");
     }
@@ -76,15 +82,14 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
         final ReadMessageRequest readMessageRequest = new ReadMessageRequest(sessionAttribute.userId(), pingData.chatRoomId(), pingData.lastMessageId());
         final List<ReadMessageDto> readMessageDtos = messageService.readAllByLastMessageId(readMessageRequest);
 
-        final List<MessageDto> textMessages = convertToMessageDto(readMessageDtos, userSession);
-        final HandleMessageResponse handleMessageResponse = new HandleMessageResponse(SendMessageStatus.SUCCESS, textMessages);
-        // 메서드 분리
+        final List<MessageDto> messageDtos = convertToMessageDto(readMessageDtos, userSession);
+        final HandleMessageResponse handleMessageResponse = new HandleMessageResponse(SendMessageStatus.SUCCESS, messageDtos);
         return List.of(new SendMessageDto(userSession, new TextMessage(objectMapper.writeValueAsString(handleMessageResponse))));
     }
 
     private List<MessageDto> convertToMessageDto(final List<ReadMessageDto> readMessageDtos, final WebSocketSession session) {
         return readMessageDtos.stream()
-                                .map(readMessageDto -> new MessageDto(readMessageDto.id(), readMessageDto.createdTime(), isMyMessage(session, readMessageDto.writerId()), readMessageDto.contents()))
+                                .map(readMessageDto -> MessageDto.of(readMessageDto, isMyMessage(session, readMessageDto.writerId())))
                                 .toList();
     }
 
@@ -96,12 +101,6 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
         sendNotificationIfReceiverNotInSession(message, sessionAttribute);
 
         return createSendMessages(message, writerId, createMessageDto.chatRoomId());
-    }
-
-    private SessionAttributeDto getSessionAttributes(final WebSocketSession session) {
-        final Map<String, Object> attributes = session.getAttributes();
-
-        return objectMapper.convertValue(attributes, SessionAttributeDto.class);
     }
 
     private CreateMessageDto createMessageDto(final ChatMessageDataDto messageData, final Long userId) {
@@ -135,7 +134,8 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
 
         final List<SendMessageDto> sendMessageDtos = new ArrayList<>();
         for (final WebSocketSession currentSession : groupSessions) {
-            final TextMessage textMessage = createTextMessage(message, writerId, currentSession);
+            final MessageDto messageDto = MessageDto.of(message, isMyMessage(currentSession, writerId));
+            final TextMessage textMessage = createTextMessage(messageDto);
             sendMessageDtos.add(new SendMessageDto(currentSession, textMessage));
             updateReadMessageLog(currentSession, chatRoomId, message);
         }
@@ -144,14 +144,11 @@ public class ChatWebSocketHandleTextMessageProvider implements WebSocketHandleTe
     }
 
     private TextMessage createTextMessage(
-            final Message message,
-            final Long writerId,
-            final WebSocketSession session
+            final MessageDto messageDto
     ) throws JsonProcessingException {
-        final boolean isMyMessage = isMyMessage(session, writerId);
-        final MessageDto messageDto = MessageDto.of(message, isMyMessage);
+        final HandleMessageResponse handleMessageResponse = new HandleMessageResponse(SendMessageStatus.SUCCESS, List.of(messageDto));
 
-        return new TextMessage(objectMapper.writeValueAsString(messageDto));
+        return new TextMessage(objectMapper.writeValueAsString(handleMessageResponse));
     }
 
     private boolean isMyMessage(final WebSocketSession session, final Long writerId) {
